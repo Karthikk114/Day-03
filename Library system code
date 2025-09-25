@@ -1,0 +1,206 @@
+import java.util.*;
+
+class Book {
+    private String title;
+    private String author;
+    private boolean isIssued;
+
+    public Book(String title, String author) {
+        this.title = title;
+        this.author = author;
+        this.isIssued = false;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public boolean isIssued() {
+        return isIssued;
+    }
+
+    public void issueBook() {
+        isIssued = true;
+    }
+
+    public void returnBook() {
+        isIssued = false;
+    }
+
+    @Override
+    public String toString() {
+        return title + " by " + author + (isIssued ? " [Issued]" : " [Available]");
+    }
+}
+
+class User {
+    private String name;
+    private List<Book> borrowedBooks;
+
+    public User(String name) {
+        this.name = name;
+        this.borrowedBooks = new ArrayList<>();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void borrowBook(Book book) {
+        borrowedBooks.add(book);
+    }
+
+    public void returnBook(Book book) {
+        borrowedBooks.remove(book);
+    }
+
+    public void showBorrowedBooks() {
+        if (borrowedBooks.isEmpty()) {
+            System.out.println(name + " has not borrowed any books.");
+        } else {
+            System.out.println(name + " borrowed:");
+            for (Book b : borrowedBooks) {
+                System.out.println(" - " + b.getTitle());
+            }
+        }
+    }
+}
+
+class Library {
+    private List<Book> books;
+
+    public Library() {
+        books = new ArrayList<>();
+    }
+
+    public void addBook(Book book) {
+        books.add(book);
+        System.out.println("Book added: " + book.getTitle());
+    }
+
+    public void showAllBooks() {
+        if (books.isEmpty()) {
+            System.out.println("No books in library.");
+        } else {
+            System.out.println("Library Books:");
+            for (Book b : books) {
+                System.out.println(b);
+            }
+        }
+    }
+
+    public void issueBook(User user, String bookTitle) {
+        for (Book b : books) {
+            if (b.getTitle().equalsIgnoreCase(bookTitle)) {
+                if (!b.isIssued()) {
+                    b.issueBook();
+                    user.borrowBook(b);
+                    System.out.println(user.getName() + " issued " + bookTitle);
+                    return;
+                } else {
+                    System.out.println("Book already issued.");
+                    return;
+                }
+            }
+        }
+        System.out.println("Book not found in library.");
+    }
+
+    public void returnBook(User user, String bookTitle) {
+        for (Book b : books) {
+            if (b.getTitle().equalsIgnoreCase(bookTitle) && b.isIssued()) {
+                b.returnBook();
+                user.returnBook(b);
+                System.out.println(user.getName() + " returned " + bookTitle);
+                return;
+            }
+        }
+        System.out.println("Book not found or not issued.");
+    }
+}
+
+public class LibraryManagement {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        Library library = new Library();
+        Map<String, User> users = new HashMap<>();
+
+        while (true) {
+            System.out.println("\n--- Library Menu ---");
+            System.out.println("1. Add Book");
+            System.out.println("2. Show All Books");
+            System.out.println("3. Register User");
+            System.out.println("4. Issue Book");
+            System.out.println("5. Return Book");
+            System.out.println("6. Show Borrowed Books");
+            System.out.println("7. Exit");
+            System.out.print("Choose an option: ");
+
+            int choice = sc.nextInt();
+            sc.nextLine();
+
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter book title: ");
+                    String title = sc.nextLine();
+                    System.out.print("Enter book author: ");
+                    String author = sc.nextLine();
+                    library.addBook(new Book(title, author));
+                    break;
+
+                case 2:
+                    library.showAllBooks();
+                    break;
+
+                case 3:
+                    System.out.print("Enter user name: ");
+                    String userName = sc.nextLine();
+                    users.put(userName, new User(userName));
+                    System.out.println("User registered: " + userName);
+                    break;
+
+                case 4:
+                    System.out.print("Enter user name: ");
+                    String issueUser = sc.nextLine();
+                    if (users.containsKey(issueUser)) {
+                        System.out.print("Enter book title to issue: ");
+                        String issueBook = sc.nextLine();
+                        library.issueBook(users.get(issueUser), issueBook);
+                    } else {
+                        System.out.println("User not found.");
+                    }
+                    break;
+
+                case 5:
+                    System.out.print("Enter user name: ");
+                    String returnUser = sc.nextLine();
+                    if (users.containsKey(returnUser)) {
+                        System.out.print("Enter book title to return: ");
+                        String returnBook = sc.nextLine();
+                        library.returnBook(users.get(returnUser), returnBook);
+                    } else {
+                        System.out.println("User not found.");
+                    }
+                    break;
+
+                case 6:
+                    System.out.print("Enter user name: ");
+                    String showUser = sc.nextLine();
+                    if (users.containsKey(showUser)) {
+                        users.get(showUser).showBorrowedBooks();
+                    } else {
+                        System.out.println("User not found.");
+                    }
+                    break;
+
+                case 7:
+                    System.out.println("Exiting Library System. Goodbye!");
+                    sc.close();
+                    return;
+
+                default:
+                    System.out.println("Invalid option. Try again.");
+            }
+        }
+    }
+}
